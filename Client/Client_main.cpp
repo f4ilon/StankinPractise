@@ -57,7 +57,7 @@ int main() {
             std::getline(std::cin, message);
             std::cout << "\033[1A" << "\033[2K" << "\r";
             if (message.empty() || message.find_first_not_of(' ') == std::string::npos) continue;;
-            client.pack(message);
+            client.sendMessage(message);
         }
     }
 

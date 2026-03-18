@@ -2,6 +2,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include "../Common/Packets.hpp"
 
 
 class Client {
@@ -29,24 +30,17 @@ class Client {
         std::cout << "Enter nickname: ";
         std::cin >> name;
     }
-    void pack(std::string message) {
-        std::string data = name + ": " + message;
-        char data_c[std::size(data)];
-        for (int i = 0; i < data.length(); i++) {
-            data_c[i] = data[i];
-        }
-        std::cout << "You: " << message;
-        std::cout << std::endl;
+
+    void sendMessage(std::string data) {
+        Message message;
+        message.fromUser = name;
+        message.type = "standardMessage";
+        message.message = data;
+        char* data_c = pack(message);
+        std::cout << "You: " << data << "\n";
+        std::cout << data_c << "\n";
         send(Socket, data_c, sizeof(data_c), 0);
     }
-
-    // void unpack(char data[]) {
-    //     std::string message;
-    //     for (int i = 0; i < sizeof(data); i++) {
-    //         message += data[i];
-    //     }
-    //     std::cout << message << "\n";
-    // }
 
     void getMessage() {
         while (true) {
