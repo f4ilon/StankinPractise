@@ -36,6 +36,7 @@ class Client {
             data_c[i] = data[i];
         }
         std::cout << "You: " << message;
+        std::cout << std::endl;
         send(Socket, data_c, sizeof(data_c), 0);
     }
 

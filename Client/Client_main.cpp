@@ -3,6 +3,7 @@
 #include <ws2tcpip.h>
 #include <chrono>
 #include <thread>
+#include <string>
 #include <windows.h>
 #include "Client.cpp"
 
@@ -53,10 +54,11 @@ int main() {
         // Отправка и
         while (!success) {
             std::string message;
-            std::cin >> message;
+            std::getline(std::cin, message);
+            std::cout << "\033[1A" << "\033[2K" << "\r";
+            if (message.empty() || message.find_first_not_of(' ') == std::string::npos) continue;;
             client.pack(message);
         }
-
     }
 
     // Закрытие сокета и очистка

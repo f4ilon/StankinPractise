@@ -24,6 +24,8 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
 
 
 int main() {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
     Server server;
     SOCKET serverSocket = server.Socket;
