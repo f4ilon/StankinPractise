@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <sstream>
 
 struct Message {
     std::string type;
@@ -10,8 +11,8 @@ struct Message {
     std::string message;
 };
 
-char* pack(Message data);
-Message unpack(char* data);
+std::string pack(Message data);
+Message unpack(char* pack_data);
 
 
 #endif //CMESS_PACKETS_HPP

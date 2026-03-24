@@ -15,7 +15,7 @@
 
 ## 🛠 Технологии
 * **Язык**: C++ (стандарт C++_17_)
-* **Сеть**: Winsock2 (Windows)
+* **Сеть**: Winsock2 (Client)/ Boost.Asio (Server)
 * **Сборка**: CMake
 
 ---
