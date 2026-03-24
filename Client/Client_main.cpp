@@ -5,29 +5,16 @@
 #include <thread>
 #include <string>
 #include <windows.h>
-#include "Client.cpp"
-
-
+#include "Client.h"
 
 
 bool keepRunning(true);
 
 
-// Функция-обработчик "прерывания"
-BOOL WINAPI ConsoleHandler(DWORD signal) {
-    if (signal == CTRL_C_EVENT || signal == CTRL_CLOSE_EVENT) {
-        std::cout << "Signal catch\n";
-        keepRunning = false;
-        return TRUE;
-    }
-    return FALSE;
-}
-
-
-
-
 int main() {
-    SetConsoleCtrlHandler(ConsoleHandler, TRUE);
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     Client client;
     SOCKET clientSocket = client.Socket;
     sockaddr_in serverAddr = client.serverAddr;
