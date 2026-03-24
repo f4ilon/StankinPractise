@@ -1,6 +1,4 @@
-#ifndef CMESS_PACKETS_HPP
-#define CMESS_PACKETS_HPP
-
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -13,6 +11,3 @@ struct Message {
 
 std::string pack(Message data);
 Message unpack(char* pack_data);
-
-
-#endif //CMESS_PACKETS_HPP
