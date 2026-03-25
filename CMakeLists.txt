@@ -20,7 +20,6 @@ add_executable(Server
         Server/Server_main.cpp
         Server/Server.cpp
 )
-target_link_libraries(Server ws2_32 wsock32)
 
 # Клиентская часть
 add_executable(Client Common/Packets.h Client/Client_main.cpp Client/Client.cpp
