@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Message unpack(char* pack_data) {
+Message unpack(std::string pack_data) {
     Message data;
     std::stringstream ss(pack_data);
 
