@@ -22,6 +22,10 @@ Client::Client() {
     std::cin >> name;
 }
 
+bool Client::tryConnect() {
+    return !connect(Socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+}
+
 void Client::sendMessage(std::string data) {
     Message message;
     message.fromUser = name;
@@ -39,14 +43,20 @@ void Client::getMessage() {
 
         if (bytesReceived > 0) {
             Message inputMessage = unpack(buffer);
+            if (inputMessage.type == "standardMessage") {
+                // Формируем красивую строку: "Имя: Сообщение"
+                std::string formattedMessage = inputMessage.fromUser + ": " + inputMessage.message;
 
-            // Формируем красивую строку: "Имя: Сообщение"
-            std::string formattedMessage = inputMessage.fromUser + ": " + inputMessage.message;
-
-            // Передаем строку в интерфейс
-            if (onMessageReceived) {
-                onMessageReceived(formattedMessage);
+                // Передаем строку в интерфейс
+                if (onMessageReceived) {
+                    onMessageReceived(formattedMessage);
+                }
             }
+            else if (inputMessage.type == "changeRoom") {
+                Client::room = inputMessage.message;
+            }
+
+
         } else if (bytesReceived <= 0) {
             if (onMessageReceived) {
                 onMessageReceived("[Система]: Сервер отключился.");
@@ -54,4 +64,8 @@ void Client::getMessage() {
             break;
         }
     }
+}
+
+void Client::stop() {
+    closesocket(Socket);
 }

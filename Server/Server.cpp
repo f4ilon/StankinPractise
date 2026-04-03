@@ -91,7 +91,13 @@ void Session::process_message(const std::string& raw_msg) {
             server_.join_room(shared_from_this(), current_room_);
 
             // Отправляем клиенту системное уведомление
-            deliver("SERVER~Система~Вы успешно перешли в комнату [" + current_room_ + "]~\n");
+            //deliver("SERVER~Система~Вы успешно перешли в комнату [" + current_room_ + "]~\n");
+            Message message;
+            message.type = "changeRoom";
+            message.fromUser = "Server";
+            message.message = current_room_;
+
+            deliver(pack(message));
         }
         // "/leave"
         else if (command.rfind("/leave", 0) == 0) {

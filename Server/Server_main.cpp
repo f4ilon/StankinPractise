@@ -7,6 +7,7 @@
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+
     try {
         std::cout << "Запуск сервера на порту 8080...\n";
         boost::asio::io_context io_context;

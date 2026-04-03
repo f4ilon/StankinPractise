@@ -14,8 +14,11 @@ public:
     SOCKET Socket;
     sockaddr_in serverAddr{};
     std::string name;
+    std::string room = "General";
     Client();
+    bool tryConnect();
     void sendMessage(std::string data);
     std::function<void(const std::string&)> onMessageReceived; // <--- ДОБАВИТЬ ЭТО
     void getMessage();
+    void stop();
 };
