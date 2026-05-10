@@ -1,17 +1,17 @@
 #include <gtest/gtest.h>
 
-// Подключаем файлы из других папок
+// РџРѕРґРєР»СЋС‡Р°РµРј С„Р°Р№Р»С‹ РёР· РґСЂСѓРіРёС… РїР°РїРѕРє
 #include "../Client/Utils.h"
 #include "../Common/Packets.h"
 
 
-// 1. ТЕСТЫ ДЛЯ УТИЛИТ (Client/Utils.cpp)
+// 1. РўР•РЎРўР« Р”Р›РЇ РЈРўРР›РРў (Client/Utils.cpp)
 
 TEST(UtilsTests, Utf8VisibleLengthWorks) {
    EXPECT_EQ(utf8_visible_length("Hello"), 5);
-   EXPECT_EQ(utf8_visible_length("Привет"), 6); // Русские символы
+   EXPECT_EQ(utf8_visible_length("РџСЂРёРІРµС‚"), 6); // Р СѓСЃСЃРєРёРµ СЃРёРјРІРѕР»С‹
    EXPECT_EQ(utf8_visible_length(""), 0);
-   EXPECT_EQ(utf8_visible_length("Hello Привет"), 12);
+   EXPECT_EQ(utf8_visible_length("Hello РџСЂРёРІРµС‚"), 12);
 }
 
 TEST(UtilsTests, WStringToStringConversion) {
@@ -31,22 +31,22 @@ TEST(UtilsTests, SingleWCharToString) {
    EXPECT_EQ(WCharToString(letter), "A");
 }
 
-// 2. ТЕСТЫ ДЛЯ ПАКЕТОВ (Common/Packets.cpp)
+// 2. РўР•РЎРўР« Р”Р›РЇ РџРђРљР•РўРћР’ (Common/Packets.cpp)
 
-// Тестируем функцию pack() - упаковка структуры в строку
+// РўРµСЃС‚РёСЂСѓРµРј С„СѓРЅРєС†РёСЋ pack() - СѓРїР°РєРѕРІРєР° СЃС‚СЂСѓРєС‚СѓСЂС‹ РІ СЃС‚СЂРѕРєСѓ
 TEST(PacketsTests, PackMessageWorks) {
    Message msg;
    msg.type = "standardMessage";
    msg.fromUser = "Ivan";
    msg.message = "Hello World";
 
-   // Согласно вашему Packets.cpp, формат должен быть: type~fromUser~message~
+   // РЎРѕРіР»Р°СЃРЅРѕ РІР°С€РµРјСѓ Packets.cpp, С„РѕСЂРјР°С‚ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ: type~fromUser~message~
    std::string expected_str = "standardMessage~Ivan~Hello World~";
 
    EXPECT_EQ(pack(msg), expected_str);
 }
 
-// Тестируем функцию unpack() - распаковка строки обратно в структуру
+// РўРµСЃС‚РёСЂСѓРµРј С„СѓРЅРєС†РёСЋ unpack() - СЂР°СЃРїР°РєРѕРІРєР° СЃС‚СЂРѕРєРё РѕР±СЂР°С‚РЅРѕ РІ СЃС‚СЂСѓРєС‚СѓСЂСѓ
 TEST(PacketsTests, UnpackMessageWorks) {
    std::string raw_data = "changeRoom~Server~General~";
 
@@ -57,25 +57,25 @@ TEST(PacketsTests, UnpackMessageWorks) {
    EXPECT_EQ(decoded_msg.message, "General");
 }
 
-// Тест на "Симметричность" - если упаковать, а потом распаковать, данные не должны измениться
+// РўРµСЃС‚ РЅР° "РЎРёРјРјРµС‚СЂРёС‡РЅРѕСЃС‚СЊ" - РµСЃР»Рё СѓРїР°РєРѕРІР°С‚СЊ, Р° РїРѕС‚РѕРј СЂР°СЃРїР°РєРѕРІР°С‚СЊ, РґР°РЅРЅС‹Рµ РЅРµ РґРѕР»Р¶РЅС‹ РёР·РјРµРЅРёС‚СЊСЃСЏ
 TEST(PacketsTests, PackAndUnpackSymmetry) {
    Message original_msg;
    original_msg.type = "testType";
    original_msg.fromUser = "TestUser";
    original_msg.message = "Test message with spaces!";
 
-   // Упаковываем
+   // РЈРїР°РєРѕРІС‹РІР°РµРј
    std::string packed_string = pack(original_msg);
-   // Сразу распаковываем
+   // РЎСЂР°Р·Сѓ СЂР°СЃРїР°РєРѕРІС‹РІР°РµРј
    Message result_msg = unpack(packed_string);
 
-   // Сверяем поля
+   // РЎРІРµСЂСЏРµРј РїРѕР»СЏ
    EXPECT_EQ(result_msg.type, original_msg.type);
    EXPECT_EQ(result_msg.fromUser, original_msg.fromUser);
    EXPECT_EQ(result_msg.message, original_msg.message);
 }
 
-// Тестируем поведение при пустых полях
+// РўРµСЃС‚РёСЂСѓРµРј РїРѕРІРµРґРµРЅРёРµ РїСЂРё РїСѓСЃС‚С‹С… РїРѕР»СЏС…
 TEST(PacketsTests, EmptyFieldsHandling) {
    Message empty_msg;
    empty_msg.type = "";
@@ -83,7 +83,7 @@ TEST(PacketsTests, EmptyFieldsHandling) {
    empty_msg.message = "";
 
    std::string packed = pack(empty_msg);
-   EXPECT_EQ(packed, "~~~"); // Должны быть просто разделители
+   EXPECT_EQ(packed, "~~~"); // Р”РѕР»Р¶РЅС‹ Р±С‹С‚СЊ РїСЂРѕСЃС‚Рѕ СЂР°Р·РґРµР»РёС‚РµР»Рё
 
    Message unpacked = unpack(packed);
    EXPECT_EQ(unpacked.type, "");
@@ -93,7 +93,7 @@ TEST(PacketsTests, EmptyFieldsHandling) {
 
 
 /
-// ГЛАВНАЯ ФУНКЦИЯ (Точка входа для тестов)
+// Р“Р›РђР’РќРђРЇ Р¤РЈРќРљР¦РРЇ (РўРѕС‡РєР° РІС…РѕРґР° РґР»СЏ С‚РµСЃС‚РѕРІ)
 int main(int argc, char** argv) {
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
