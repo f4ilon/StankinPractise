@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"D:/StankinPractice/StankinPractise/build/cmake_install.cmake",
-		"D:/StankinPractice/StankinPractise/build/Tests/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
