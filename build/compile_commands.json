@@ -1,0 +1,62 @@
+[
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Server.dir\\Server\\Server_main.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Server\\Server_main.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Server/Server_main.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Server.dir/Server/Server_main.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Server.dir\\Server\\Server.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Server\\Server.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Server/Server.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Server.dir/Server/Server.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Server.dir\\Common\\Packets.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Common\\Packets.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Common/Packets.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Server.dir/Common/Packets.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Client.dir\\Client\\Client_main.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Client\\Client_main.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Client/Client_main.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Client.dir/Client/Client_main.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Client.dir\\Client\\Client.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Client\\Client.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Client/Client.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Client.dir/Client/Client.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Client.dir\\Client\\Utils.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Client\\Utils.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Client/Utils.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Client.dir/Client/Utils.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -g -std=gnu++17 -o CMakeFiles\\Client.dir\\Common\\Packets.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Common\\Packets.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Common/Packets.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/CMakeFiles/Client.dir/Common/Packets.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DGTEST_LINKED_AS_SHARED_LIBRARY=1 -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -ID:/StankinPractice/StankinPractise -g -std=gnu++17 -o Tests\\CMakeFiles\\messenger_tests.dir\\test_main.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Tests\\test_main.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Tests/test_main.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/Tests/CMakeFiles/messenger_tests.dir/test_main.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DGTEST_LINKED_AS_SHARED_LIBRARY=1 -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -ID:/StankinPractice/StankinPractise -g -std=gnu++17 -o Tests\\CMakeFiles\\messenger_tests.dir\\__\\Common\\Packets.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Common\\Packets.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Common/Packets.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/Tests/CMakeFiles/messenger_tests.dir/__/Common/Packets.cpp.obj"
+},
+{
+  "directory": "D:/StankinPractice/StankinPractise/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DGTEST_LINKED_AS_SHARED_LIBRARY=1 -ID:/StankinPractice/StankinPractise/Server -ID:/StankinPractice/StankinPractise/Client -ID:/StankinPractice/StankinPractise/Common -ID:/StankinPractice/StankinPractise -g -std=gnu++17 -o Tests\\CMakeFiles\\messenger_tests.dir\\__\\Client\\Utils.cpp.obj -c D:\\StankinPractice\\StankinPractise\\Client\\Utils.cpp",
+  "file": "D:/StankinPractice/StankinPractise/Client/Utils.cpp",
+  "output": "D:/StankinPractice/StankinPractise/build/Tests/CMakeFiles/messenger_tests.dir/__/Client/Utils.cpp.obj"
+}
+]

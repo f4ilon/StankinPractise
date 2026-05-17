@@ -1,0 +1,14 @@
+# ninja log v7
+60	543	8007351302385698	CMakeFiles/Client.dir/Common/Packets.cpp.obj	2a6f579bab13944e
+55	567	8007337012159210	Tests/CMakeFiles/messenger_tests.dir/__/Common/Packets.cpp.obj	56b99cc12ca58e28
+60	1332	8007337012219213	Tests/CMakeFiles/messenger_tests.dir/__/Client/Utils.cpp.obj	73cd02f9aa6a8d11
+50	1449	8007351302285696	CMakeFiles/Client.dir/Client/Client.cpp.obj	63b11978c23a0fa3
+45	1616	8007351302235645	CMakeFiles/Client.dir/Client/Client_main.cpp.obj	e0621109ceee1927
+5	1887	8007337668733545	Tests/CMakeFiles/messenger_tests.dir/test_main.cpp.obj	ba193260bdc514ea
+56	228	8007343255919394	Tests/messenger_tests.exe	9c251ae05ad546f7
+55	1276	8007351302335703	CMakeFiles/Client.dir/Client/Utils.cpp.obj	82e736d02d72df52
+1616	1796	8007351317946894	Client.exe	a72c4a1f55a5d391
+17	2867	8007351301963754	CMakeFiles/Server.dir/Server/Server_main.cpp.obj	3b36429eecf75aa6
+40	3690	8007351302183800	CMakeFiles/Server.dir/Server/Server.cpp.obj	312541cb1ee6d829
+16	1723	8007398601318403	CMakeFiles/Server.dir/Common/Packets.cpp.obj	db8c63854b228abb
+1724	2187	8007398618393656	Server.exe	1e252d4300d12aa9
