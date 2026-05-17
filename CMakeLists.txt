@@ -18,6 +18,7 @@ include_directories("C:/msys64/ucrt64/include")
 add_executable(Server
         Server/Server_main.cpp
         Server/Server.cpp
+        Common/Packets.cpp
 )
 target_link_libraries(Server ws2_32 wsock32)
 
@@ -27,5 +28,12 @@ add_executable(Client
         Client/Client_main.cpp
         Client/Client.cpp
         Client/Utils.h
+        Client/Utils.cpp
         Common/Packets.cpp
 )
+
+target_link_libraries(Client PRIVATE ws2_32)
+
+# Включаем поддержку тестирования и добавляем поддиректорию
+enable_testing()
+add_subdirectory(Tests)
