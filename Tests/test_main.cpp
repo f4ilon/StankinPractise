@@ -5,7 +5,7 @@
 #include "../Common/Packets.h"
 
 
-// 1. ТЕСТЫ ДЛЯ УТИЛИТ (Client/Utils.cpp)
+// ТЕСТЫ ДЛЯ УТИЛИТ (Client/Utils.cpp)
 
 TEST(UtilsTests, Utf8VisibleLengthWorks) {
    EXPECT_EQ(utf8_visible_length("Hello"), 5);
@@ -31,7 +31,7 @@ TEST(UtilsTests, SingleWCharToString) {
    EXPECT_EQ(WCharToString(letter), "A");
 }
 
-// 2. ТЕСТЫ ДЛЯ ПАКЕТОВ (Common/Packets.cpp)
+// ТЕСТЫ ДЛЯ ПАКЕТОВ (Common/Packets.cpp)
 
 // Тестируем функцию pack() - упаковка структуры в строку
 TEST(PacketsTests, PackMessageWorks) {
@@ -40,7 +40,7 @@ TEST(PacketsTests, PackMessageWorks) {
    msg.fromUser = "Ivan";
    msg.message = "Hello World";
 
-   // Согласно вашему Packets.cpp, формат должен быть: type~fromUser~message~
+   // Согласно Packets.cpp, формат должен быть: type~fromUser~message~
    std::string expected_str = "standardMessage~Ivan~Hello World~";
 
    EXPECT_EQ(pack(msg), expected_str);
@@ -57,7 +57,7 @@ TEST(PacketsTests, UnpackMessageWorks) {
    EXPECT_EQ(decoded_msg.message, "General");
 }
 
-// Тест на "Симметричность" - если упаковать, а потом распаковать, данные не должны измениться
+// Тест на симметричность - если упаковать, а потом распаковать, данные не должны измениться
 TEST(PacketsTests, PackAndUnpackSymmetry) {
    Message original_msg;
    original_msg.type = "testType";
@@ -89,6 +89,43 @@ TEST(PacketsTests, EmptyFieldsHandling) {
    EXPECT_EQ(unpacked.type, "");
    EXPECT_EQ(unpacked.fromUser, "");
    EXPECT_EQ(unpacked.message, "");
+}
+
+// Тест на известную уязвимость протокола: символ-разделитель внутри сообщения
+TEST(PacketsTests, DelimiterBreaksMessageWarning) {
+   Message msg;
+   msg.type = "msg";
+   msg.fromUser = "User";
+   msg.message = "Hello~world"; // Юзер ввел тильду
+
+   std::string packed = pack(msg);
+   Message unpacked = unpack(packed);
+
+   // Сообщение обрезается из-за логики парсера. Тест фиксирует эту особенность.
+   EXPECT_NE(unpacked.message, msg.message); 
+   EXPECT_EQ(unpacked.message, "Hello"); 
+}
+
+// Тест на обработку экстремально длинного сообщения
+TEST(PacketsTests, HugeMessageHandling) {
+   Message msg;
+   msg.type = "standardMessage";
+   msg.fromUser = "Spammer";
+   msg.message = std::string(10000, 'A'); // Строка из 10 000 символов
+
+   std::string packed = pack(msg);
+   Message unpacked = unpack(packed);
+
+   EXPECT_EQ(unpacked.message.length(), 10000);
+   EXPECT_EQ(unpacked.message, msg.message);
+}
+
+// Проверка логики очистки пробелов
+TEST(UtilsTests, TrimSpacesLogic) {
+   std::string input = "General   \n\r\t";
+   input.erase(input.find_last_not_of(" \n\r\t") + 1);
+   
+   EXPECT_EQ(input, "General");
 }
 
 
