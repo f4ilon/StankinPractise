@@ -17,6 +17,7 @@
     #include <sys/select.h>
 #endif
 
+
 std::atomic<bool> keepRunning{true};
 std::mutex ui_mtx;
 std::vector<std::string> messages;
@@ -70,7 +71,7 @@ void draw_ui() {
 #endif
 
     int chat_height = height - 3;
-    int start_idx = std::max(0, (int)messages.size() - chat_height);
+    int start_idx = (std::max)(0, (int)messages.size() - chat_height);
 
     for (int i = 0; i < chat_height; ++i) {
         if (start_idx + i < (int)messages.size()) {
@@ -80,7 +81,7 @@ void draw_ui() {
         }
     }
 
-    std::cout << client.room << std::string(std::max(0, width - utf8_visible_length(client.room) - 1), '-') << "\n";
+    std::cout << client.room << std::string((std::max)(0, width - utf8_visible_length(client.room) - 1), '-') << "\n";
     std::cout << "You: " << current_input << std::flush;
 }
 

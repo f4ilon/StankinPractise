@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
+
+set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
+
 project(StankinPractise LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,7 +20,11 @@ add_executable(Server
 )
 
 find_package(Boost REQUIRED)
-target_link_libraries(Server Boost::boost pthread)
+target_link_libraries(Server Boost::boost)
+
+if(NOT WIN32)
+    target_link_libraries(Server pthread)
+endif()
 
 # ====================== КЛИЕНТ ======================
 add_executable(Client
@@ -34,7 +42,6 @@ endif()
 
 # ====================== ТЕСТЫ ======================
 find_package(GTest QUIET)
-
 if(GTest_FOUND)
     add_executable(messenger_tests
         Tests/test_main.cpp
@@ -43,7 +50,7 @@ if(GTest_FOUND)
     )
 
     target_include_directories(messenger_tests PRIVATE ${CMAKE_SOURCE_DIR})
-    
+
     if(WIN32)
         target_link_libraries(messenger_tests GTest::gtest_main ws2_32)
     else()
@@ -52,7 +59,4 @@ if(GTest_FOUND)
 
     include(CTest)
     add_test(NAME AllTests COMMAND messenger_tests)
-    message(STATUS "Google Test found and tests enabled")
-else()
-    message(STATUS "Google Test not found - tests disabled")
 endif()
