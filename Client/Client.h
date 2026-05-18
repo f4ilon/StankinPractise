@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <string>
-#include <mutex>
 #include <functional>
 #include "../Common/Packets.h"
 
@@ -31,8 +30,9 @@ public:
 
     Client();
     bool tryConnect();
-    void sendMessage(std::string data);
+    void sendMessage(const std::string& data);
     std::function<void(const std::string&)> onMessageReceived;
+    
     void getMessage();
     void stop();
 };
