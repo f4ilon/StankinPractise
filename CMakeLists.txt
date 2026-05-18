@@ -8,18 +8,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Server)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Client)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Common)
 
-# === СЕРВЕР ===
+# ====================== СЕРВЕР ======================
 add_executable(Server
     Server/Server_main.cpp
     Server/Server.cpp
-    Common/Packets.cpp     # <-- Добавили это
+    Common/Packets.cpp
 )
 
 find_package(Boost REQUIRED)
 target_link_libraries(Server Boost::boost pthread)
-target_compile_definitions(Server PRIVATE LINUX_BUILD)
 
-# === КЛИЕНТ ===
+# ====================== КЛИЕНТ ======================
 add_executable(Client
     Client/Client_main.cpp
     Client/Client.cpp
@@ -27,5 +26,33 @@ add_executable(Client
     Common/Packets.cpp
 )
 
-target_link_libraries(Client pthread)
-target_compile_definitions(Client PRIVATE LINUX_BUILD)
+if(WIN32)
+    target_link_libraries(Client ws2_32 wsock32)
+else()
+    target_link_libraries(Client pthread)
+endif()
+
+# ====================== ТЕСТЫ ======================
+find_package(GTest QUIET)
+
+if(GTest_FOUND)
+    add_executable(messenger_tests
+        Tests/test_main.cpp
+        Common/Packets.cpp
+        Client/Utils.cpp
+    )
+
+    target_include_directories(messenger_tests PRIVATE ${CMAKE_SOURCE_DIR})
+    
+    if(WIN32)
+        target_link_libraries(messenger_tests GTest::gtest_main ws2_32)
+    else()
+        target_link_libraries(messenger_tests GTest::gtest_main pthread)
+    endif()
+
+    include(CTest)
+    add_test(NAME AllTests COMMAND messenger_tests)
+    message(STATUS "Google Test found and tests enabled")
+else()
+    message(STATUS "Google Test not found - tests disabled")
+endif()
