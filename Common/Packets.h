@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <sstream>
 
 struct Message {
     std::string type;
@@ -9,6 +8,8 @@ struct Message {
     std::string message;
 };
 
-std::string pack(Message data);
-Message unpack(std::string pack_data);
+std::string pack(const Message& data);
+Message unpack(const std::string& pack_data);
 
+// Для удобства
+std::string pack(const std::string& type, const std::string& fromUser, const std::string& message);

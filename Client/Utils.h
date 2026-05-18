@@ -1,18 +1,19 @@
 #pragma once
 
-#include <iostream>
-#include <windows.h>
 #include <string>
 
+#ifdef _WIN32
+    #include <windows.h>
+#endif
 
+// === Конвертация кодировок ===
 std::string WCharToString(wchar_t wch);
-// Из UTF-16 (Windows UI) в UTF-8 (Сеть)
 std::string WStringToString(const std::wstring& wstr);
-// Из UTF-8 (Сеть) в UTF-16 (Windows UI)
 std::wstring StringToWString(const std::string& str);
-// Конвертирует широкий символ Windows (UTF-16) в строку UTF-8
 std::string WCharToUTF8(wchar_t wch);
-// Установка курсора в консоли
+
+// === Консольные функции ===
 void set_cursor(short x, short y);
-// Функция для подсчета ВИДИМЫХ символов в строке UTF-8 (а не байтов)
+
+// Подсчёт видимых символов в UTF-8 строке (важно для кириллицы и эмодзи)
 int utf8_visible_length(const std::string& str);

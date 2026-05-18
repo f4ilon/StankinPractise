@@ -1,6 +1,9 @@
-cmake_minimum_required(VERSION 4.01)
+cmake_minimum_required(VERSION 3.14)
 
-project(Cmess)
+set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
+
+project(StankinPractise LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,32 +11,52 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Server)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Client)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Common)
-include_directories("C:/msys64/ucrt64/include")
-# Если ставили в mingw64, раскомментируйте строку ниже вместо верхней:
-#include_directories("C:/msys64/mingw64/include")
 
-
-# --- ЦЕЛИ СБОРКИ ---
-# Серверная часть
+# ====================== СЕРВЕР ======================
 add_executable(Server
-        Server/Server_main.cpp
-        Server/Server.cpp
-        Common/Packets.cpp
+    Server/Server_main.cpp
+    Server/Server.cpp
+    Common/Packets.cpp
 )
-target_link_libraries(Server ws2_32 wsock32)
 
-# Клиентская часть
+find_package(Boost REQUIRED)
+target_link_libraries(Server Boost::boost)
+
+if(NOT WIN32)
+    target_link_libraries(Server pthread)
+endif()
+
+# ====================== КЛИЕНТ ======================
 add_executable(Client
-        Common/Packets.h
-        Client/Client_main.cpp
-        Client/Client.cpp
-        Client/Utils.h
-        Client/Utils.cpp
-        Common/Packets.cpp
+    Client/Client_main.cpp
+    Client/Client.cpp
+    Client/Utils.cpp
+    Common/Packets.cpp
 )
 
-target_link_libraries(Client PRIVATE ws2_32)
+if(WIN32)
+    target_link_libraries(Client ws2_32 wsock32)
+else()
+    target_link_libraries(Client pthread)
+endif()
 
-# Включаем поддержку тестирования и добавляем поддиректорию
-enable_testing()
-add_subdirectory(Tests)
+# ====================== ТЕСТЫ ======================
+find_package(GTest QUIET)
+if(GTest_FOUND)
+    add_executable(messenger_tests
+        Tests/test_main.cpp
+        Common/Packets.cpp
+        Client/Utils.cpp
+    )
+
+    target_include_directories(messenger_tests PRIVATE ${CMAKE_SOURCE_DIR})
+
+    if(WIN32)
+        target_link_libraries(messenger_tests GTest::gtest_main ws2_32)
+    else()
+        target_link_libraries(messenger_tests GTest::gtest_main pthread)
+    endif()
+
+    include(CTest)
+    add_test(NAME AllTests COMMAND messenger_tests)
+endif()

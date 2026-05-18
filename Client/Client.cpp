@@ -1,63 +1,71 @@
 #include "Client.h"
-
+#include <cstring>   // для memset
 
 Client::Client() {
-    // Инициализация Winsock
+#ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cerr << "WSAStartup failed.\n";
+        return;
     }
-    // Создание сокета
-    Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+#endif
+
+    Socket = socket(AF_INET, SOCK_STREAM, 0);
     if (Socket == INVALID_SOCKET) {
-        std::cerr << "Error creating socket: " << WSAGetLastError() << "\n";
+        std::cerr << "Error creating socket\n";
+#ifdef _WIN32
         WSACleanup();
+#endif
+        return;
     }
-    // Настройка адреса сервера
+
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(8080);
-    // Указываем IP-адрес сервера
-    InetPton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
+    inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);   // кроссплатформенная версия
+
     std::cout << "Enter nickname: ";
     std::cin >> name;
+    std::cin.ignore(); // очистка буфера на случай getline позже
 }
 
 bool Client::tryConnect() {
-    return !connect(Socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+    int result = connect(Socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+    return result == 0;
 }
 
-void Client::sendMessage(std::string data) {
+void Client::sendMessage(const std::string& data) {
     Message message;
-    message.fromUser = name;
     message.type = "standardMessage";
+    message.fromUser = name;
     message.message = data;
+
     std::string packedMessage = pack(message);
+    
     std::cout << "You: " << data << "\n";
+    
     send(Socket, packedMessage.c_str(), packedMessage.length(), 0);
 }
 
 void Client::getMessage() {
     while (true) {
         char buffer[1024] = {0};
-        int bytesReceived = recv(Socket, buffer, sizeof(buffer), 0);
+        int bytesReceived = recv(Socket, buffer, sizeof(buffer) - 1, 0);
 
         if (bytesReceived > 0) {
+            buffer[bytesReceived] = '\0';
             Message inputMessage = unpack(buffer);
-            if (inputMessage.type == "standardMessage") {
-                // Формируем красивую строку: "Имя: Сообщение"
-                std::string formattedMessage = inputMessage.fromUser + ": " + inputMessage.message;
 
-                // Передаем строку в интерфейс
+            if (inputMessage.type == "standardMessage") {
+                std::string formattedMessage = inputMessage.fromUser + ": " + inputMessage.message;
                 if (onMessageReceived) {
                     onMessageReceived(formattedMessage);
                 }
             }
             else if (inputMessage.type == "changeRoom") {
-                Client::room = inputMessage.message;
+                room = inputMessage.message;
             }
-
-
-        } else if (bytesReceived <= 0) {
+        } 
+        else {
             if (onMessageReceived) {
                 onMessageReceived("[Система]: Сервер отключился.");
             }
@@ -67,5 +75,10 @@ void Client::getMessage() {
 }
 
 void Client::stop() {
-    closesocket(Socket);
+    if (Socket != INVALID_SOCKET) {
+        CLOSE_SOCKET(Socket);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+    }
 }

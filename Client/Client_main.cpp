@@ -1,80 +1,171 @@
 #include <iostream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <chrono>
 #include <thread>
-#include <string>
-#include <vector>
-#include <mutex>
+#include <chrono>
 #include <atomic>
-#include <windows.h>
-#include <conio.h>
-#include "Utils.h"
+#include <mutex>
+#include <vector>
 #include "Client.h"
+#include "Utils.h"
 
-std::atomic<bool> keepRunning = true;
+#ifdef _WIN32
+#include <windows.h>
+#include <queue> // Для буферизации UTF-8 символов в Windows
+#else
+#include <unistd.h>
+#include <termios.h>
+#include <fcntl.h>
+#include <sys/select.h>
+#endif
+
+std::atomic<bool> keepRunning{ true };
 std::mutex ui_mtx;
 std::vector<std::string> messages;
 std::string current_input;
-
-HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-
 Client client;
 
-// Отрисовка истории и ввода
+// ====================== WINDOWS INPUT ======================
+#ifdef _WIN32
+std::queue<char> win_input_buffer;
+
+bool win_kbhit() {
+    if (!win_input_buffer.empty()) return true;
+
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD eventsAvail = 0;
+    GetNumberOfConsoleInputEvents(hIn, &eventsAvail);
+    if (eventsAvail == 0) return false;
+
+    INPUT_RECORD ir;
+    DWORD count;
+    ReadConsoleInputW(hIn, &ir, 1, &count);
+
+    if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown) {
+        WORD vk = ir.Event.KeyEvent.wVirtualKeyCode;
+        WCHAR wch = ir.Event.KeyEvent.uChar.UnicodeChar;
+
+        if (vk == VK_RETURN) { win_input_buffer.push('\n'); return true; }
+        if (vk == VK_BACK) { win_input_buffer.push(8); return true; }
+        if (vk == VK_ESCAPE) { win_input_buffer.push(27); return true; }
+
+        if (wch >= 32) { // Любой печатаемый символ
+            std::string utf8 = WCharToString(wch); // Конвертируем в UTF-8
+            for (char c : utf8) {
+                win_input_buffer.push(c); // Разбиваем на байты и кладем в очередь
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+char win_getch() {
+    if (win_input_buffer.empty()) return 0;
+    char c = win_input_buffer.front();
+    win_input_buffer.pop();
+    return c;
+}
+#endif
+
+// ====================== LINUX INPUT ======================
+#ifndef _WIN32
+struct termios orig_termios;
+
+void reset_terminal_mode() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+}
+
+void init_terminal_mode() {
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    atexit(reset_terminal_mode);
+    struct termios new_termios = orig_termios;
+    new_termios.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+}
+
+bool linux_kbhit() {
+    struct timeval tv = { 0L, 0L };
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    return select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) > 0;
+}
+
+char linux_getch() {
+    char ch = 0;
+    if (read(STDIN_FILENO, &ch, 1) < 0) return 0;
+    return ch;
+}
+#endif
+// =========================================================
+
 void draw_ui() {
     std::lock_guard<std::mutex> lock(ui_mtx);
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    int width  = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    int height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-    int chat_height = height - 2;
 
-    set_cursor(0, 0);
-    int start_idx = (int)messages.size() > chat_height
-                    ? (int)messages.size() - chat_height : 0;
+#ifdef _WIN32
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(hOut, &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    int height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+    // Возвращаем курсор в начало видимого окна (исправляет наслоение)
+    COORD coord;
+    coord.X = csbi.srWindow.Left;
+    coord.Y = csbi.srWindow.Top;
+    SetConsoleCursorPosition(hOut, coord);
+#else
+    std::cout << "\033[2J\033[H";
+    int width = 80;
+    int height = 24;
+#endif
+
+    int chat_height = height - 3;
+    int start_idx = (std::max)(0, (int)messages.size() - chat_height);
 
     for (int i = 0; i < chat_height; ++i) {
         if (start_idx + i < (int)messages.size()) {
             std::string msg = messages[start_idx + i];
-            int visible = utf8_visible_length(msg);
-            int pad = std::max(0, width - visible - 1);
-            std::cout << msg << std::string(pad, ' ') << "\n";
-        } else {
-            std::cout << std::string(width - 1, ' ') << "\n";
+            int pad = (std::max)(0, width - utf8_visible_length(msg) - 1);
+            std::cout << msg << std::string(pad, ' ') << "\n"; // Добиваем пробелами
+        }
+        else {
+            std::cout << std::string(width - 1, ' ') << "\n"; // Пустые строки
         }
     }
-    set_cursor(0, height - 2);
-    std::cout << client.room << std::string(width - 1 - utf8_visible_length(client.room), '-') << "\n";
-    set_cursor(0, height - 1);
+
+    std::string room_str = client.room;
+    int pad_room = (std::max)(0, width - utf8_visible_length(room_str) - 1);
+    std::cout << room_str << std::string(pad_room, '-') << "\n";
+
     std::string prompt = "You: " + current_input;
-    int pad = std::max(0, width - utf8_visible_length(prompt) - 1);
-    std::cout << prompt << std::string(pad, ' ');
-    set_cursor(utf8_visible_length(prompt), height - 1);
+    int pad_prompt = (std::max)(0, width - utf8_visible_length(prompt) - 1);
+
+    // Трюк с \r: печатаем строку, забиваем хвост пробелами, возвращаем каретку и печатаем строку снова.
+    // Это оставит мигающий курсор ровно в конце введенного текста!
+    std::cout << prompt << std::string(pad_prompt, ' ') << "\r" << prompt << std::flush;
 }
 
 int main() {
+#ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO cci;
-    GetConsoleCursorInfo(hOut, &cci);
-    cci.bVisible = TRUE;
-    SetConsoleCursorInfo(hOut, &cci);
-
-
+#else
+    init_terminal_mode();
+#endif
 
     std::cout << "Connecting to server...\n";
+
     while (keepRunning) {
         if (client.tryConnect()) break;
-        std::cerr << "Connection failed. Reconnecting...\n";
+        std::cerr << "Connection failed. Reconnecting in 2 seconds...\n";
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 
-    system("cls");
-    { std::lock_guard<std::mutex> lock(ui_mtx); messages.push_back("[Система]: Подключено!"); }
-    draw_ui();
+#ifdef _WIN32
+    system("cls"); // Единоразово чистим консоль после подключения на винде
+#endif
+
+    std::cout << "\n=== Подключено! ===\n";
 
     client.onMessageReceived = [](const std::string& text) {
         {
@@ -82,72 +173,79 @@ int main() {
             messages.push_back(text);
         }
         draw_ui();
-    };
+        };
 
-    std::thread receive_thread([]() {
-            client.getMessage();
-        });
+    std::thread receive_thread(&Client::getMessage, &client);
     receive_thread.detach();
 
+    draw_ui();
+
+    // ==================== Основной цикл ввода ====================
     while (keepRunning) {
-        INPUT_RECORD ir;
-        DWORD count;
+        bool ui_needs_update = false;
 
-        DWORD eventsAvail = 0;
-        GetNumberOfConsoleInputEvents(hIn, &eventsAvail);
-        if (eventsAvail == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            continue;
-        }
+        while (true) {
+            char ch = 0;
 
-        ReadConsoleInputW(hIn, &ir, 1, &count);
+#ifdef _WIN32
+            if (win_kbhit()) ch = win_getch();
+            else break;
+#else
+            if (linux_kbhit()) ch = linux_getch();
+            else break;
+#endif
 
-        // Обрабатываем только KEY_EVENT при нажатии
-        if (ir.EventType != KEY_EVENT || !ir.Event.KeyEvent.bKeyDown)
-            continue;
-
-        WORD vk  = ir.Event.KeyEvent.wVirtualKeyCode;
-        wchar_t wch = ir.Event.KeyEvent.uChar.UnicodeChar;
-
-        if (vk == VK_RETURN) {                     // Enter
-            if (!current_input.empty() &&
-                current_input.find_first_not_of(' ') != std::string::npos)
-            {
-                std::string msg = current_input;
-                { std::lock_guard<std::mutex> lk(ui_mtx); current_input.clear(); }
-                client.sendMessage(msg);
-                { std::lock_guard<std::mutex> lk(ui_mtx); messages.push_back("You: " + msg); }
+            if (ch == '\n' || ch == '\r') {  // Enter
+                if (!current_input.empty()) {
+                    std::string msg = current_input;
+                    current_input.clear();
+                    client.sendMessage(msg);
+                    messages.push_back("You: " + msg);
+                }
             }
-        }
-        else if (vk == VK_BACK) {                  // Backspace
-            std::lock_guard<std::mutex> lk(ui_mtx);
-            if (!current_input.empty()) {
-                // UTF-8: удаляем хвостовые байты-продолжения
-                while (!current_input.empty() &&
-                       (unsigned char)current_input.back() >= 0x80 &&
-                       (unsigned char)current_input.back() <= 0xBF)
-                    current_input.pop_back();
-                if (!current_input.empty()) current_input.pop_back();
+            else if (ch == 8 || ch == 127) { // Backspace
+                if (!current_input.empty()) {
+                    while (!current_input.empty() &&
+                        (unsigned char)current_input.back() >= 0x80 &&
+                        (unsigned char)current_input.back() <= 0xBF) {
+                        current_input.pop_back();
+                    }
+                    if (!current_input.empty()) current_input.pop_back();
+                }
             }
+            else if (ch == 27) { // ESC
+#ifndef _WIN32
+                if (linux_kbhit()) {
+                    while (linux_kbhit()) linux_getch();
+                }
+                else {
+                    keepRunning = false;
+                }
+#else
+                keepRunning = false;
+#endif
+            }
+            else if ((unsigned char)ch >= 32) {
+                current_input += ch;
+            }
+
+            ui_needs_update = true;
         }
-        else if (vk == VK_ESCAPE) {                // ESC
-            keepRunning = false;
-            break;
+
+        if (ui_needs_update) {
+            draw_ui();
         }
-        else if (wch >= 0x20) {                   // Любой печатаемый символ
-            std::lock_guard<std::mutex> lk(ui_mtx);
-            current_input += WCharToString(wch);  // конвертируем в String
-        }
-        else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            continue;
-        }
-        draw_ui();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    system("cls");
     client.stop();
-    if (receive_thread.joinable()) receive_thread.join();
+
+#ifdef _WIN32
+    system("cls");
     WSACleanup();
+#endif
+
+    std::cout << "\nКлиент завершил работу.\n";
     return 0;
 }
