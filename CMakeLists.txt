@@ -69,8 +69,10 @@ endif()
 # ====================== ТЕСТЫ ======================
 add_subdirectory(Tests)
 # ===================================================
-add_compile_definitions(_WIN32_WINNT=0x0A00)
-add_compile_definitions(WIN32_LEAN_AND_MEAN)
+if(WIN32)
+    add_compile_definitions(_WIN32_WINNT=0x0A00)
+    add_compile_definitions(WIN32_LEAN_AND_MEAN)
+endif()
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
