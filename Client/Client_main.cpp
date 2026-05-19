@@ -199,9 +199,11 @@ int main() {
                 if (!current_input.empty()) {
                     std::string msg = current_input;
                     current_input.clear();
-                    // Отбрасываем сообщения из одних пробелов
+                    
+                    // Отправляем, только если есть хотя бы один нормальный символ
                     if (msg.find_first_not_of(" \t\r\n") != std::string::npos) {
                         client.sendMessage(msg);
+                        // Добавляем себе в историю только если отправили
                         messages.push_back("You: " + msg);         
                     }
                 }
@@ -229,7 +231,10 @@ int main() {
 #endif
             }
             else if ((unsigned char)ch >= 32) {
-                current_input += ch;
+                // Если это не тильда, добавляем в строку ввода
+                if (ch != '~') { 
+                    current_input += ch;
+                }
             }
 
             ui_needs_update = true;
