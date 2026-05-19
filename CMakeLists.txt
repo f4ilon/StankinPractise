@@ -17,6 +17,9 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG v1.14.0
 )
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(googletest)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -28,7 +31,7 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-if(NOT MSVC) # Проверка переполнений на линукс, убрать на финальной сборке
+if(NOT MSVC) # Проверка переполнений на линукс
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
     add_link_options(-fsanitize=address)
 endif()

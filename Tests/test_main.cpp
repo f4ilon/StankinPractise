@@ -182,7 +182,7 @@ TEST(IntegrationTests, MessageRoutingAndRooms) {
     Client clientB("Katyenka", 8081);
     ASSERT_TRUE(clientB.tryConnect());
 
-    // Перехватчик сообщений для Боба
+    // Перехватчик сообщений для Якова
     std::string receivedByB = "";
     clientB.onMessageReceived = [&receivedByB](const std::string& msg) {
         receivedByB = msg;
@@ -202,14 +202,14 @@ TEST(IntegrationTests, MessageRoutingAndRooms) {
     EXPECT_EQ(receivedByB, "Yakov: Hello Katyenka!");
 
     // Сценарий 2: Изоляция комнат
-    receivedByB = ""; // Сбрасываем буфер Боба
+    receivedByB = ""; // Сбрасываем буфер Якова
     clientA.sendMessage("/join Gaming"); // Катенька уходит
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     clientA.sendMessage("Secret Room Message"); // Катенька пишет в новой комнате
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
-    // Боб остался в General, он не должен получить это сообщение
+    // Яков остался в General, он не должен получить это сообщение
     EXPECT_EQ(receivedByB, "");
 
     // Чистим за собой потоки, чтобы тест успешно завершился
