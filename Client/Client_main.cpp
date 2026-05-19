@@ -199,8 +199,11 @@ int main() {
                 if (!current_input.empty()) {
                     std::string msg = current_input;
                     current_input.clear();
-                    client.sendMessage(msg);
-                    messages.push_back("You: " + msg);
+                    // Отбрасываем сообщения из одних пробелов
+                    if (msg.find_first_not_of(" \t\r\n") != std::string::npos) {
+                        client.sendMessage(msg);
+                        messages.push_back("You: " + msg);         
+                    }
                 }
             }
             else if (ch == 8 || ch == 127) { // Backspace

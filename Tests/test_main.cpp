@@ -75,20 +75,22 @@ TEST(PacketsTests, PackAndUnpackSymmetry) {
    EXPECT_EQ(result_msg.message, original_msg.message);
 }
 
-// Тестируем поведение при пустых полях
+// Тестируем поведение при полностью пустом пакете
 TEST(PacketsTests, EmptyFieldsHandling) {
-   Message empty_msg;
-   empty_msg.type = "";
-   empty_msg.fromUser = "";
-   empty_msg.message = "";
+	Message empty_msg;
+	empty_msg.type = "";
+	empty_msg.fromUser = "";
+	empty_msg.message = "";
 
-   std::string packed = pack(empty_msg);
-   EXPECT_EQ(packed, "~~~"); // Должны быть просто разделители
+	std::string packed = pack(empty_msg);
+	EXPECT_EQ(packed, "~~~");
 
-   Message unpacked = unpack(packed);
-   EXPECT_EQ(unpacked.type, "");
-   EXPECT_EQ(unpacked.fromUser, "");
-   EXPECT_EQ(unpacked.message, "");
+	Message unpacked = unpack(packed);
+
+	// unpack() специально помечает такой пакет как невалидный
+	EXPECT_EQ(unpacked.type, "error");
+	EXPECT_EQ(unpacked.fromUser, "");
+	EXPECT_EQ(unpacked.message, "Invalid packet");
 }
 
 // Тест на известную уязвимость протокола: символ-разделитель внутри сообщения

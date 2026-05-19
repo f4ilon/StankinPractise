@@ -30,7 +30,15 @@ Client::Client() {
 
 bool Client::tryConnect() {
     int result = connect(Socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
-    return result == 0;
+    if (result != 0) {
+#ifdef _WIN32
+        std::cerr << "[Client] Connection failed: " << WSAGetLastError() << "\n";
+#else
+        std::cerr << "[Client] Connection failed: " << strerror(errno) << "\n";
+#endif
+        return false;
+    }
+    return true;
 }
 
 void Client::sendMessage(const std::string& data) {
@@ -40,10 +48,17 @@ void Client::sendMessage(const std::string& data) {
     message.message = data;
 
     std::string packedMessage = pack(message);
-    
     std::cout << "You: " << data << "\n";
     
-    send(Socket, packedMessage.c_str(), packedMessage.length(), 0);
+    int bytes = send(Socket, packedMessage.c_str(), static_cast<int>(packedMessage.length()), 0);
+    if (bytes < 0) {
+#ifdef _WIN32
+        std::cerr << "[Client] Send failed: " << WSAGetLastError() << "\n";
+#else
+        std::cerr << "[Client] Send failed: " << strerror(errno) << "\n";
+#endif
+        stop();
+    }
 }
 
 void Client::getMessage() {
