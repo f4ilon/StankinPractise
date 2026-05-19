@@ -28,6 +28,8 @@ public:
     std::string name;
     std::string room = "General";
 
+    Client(const std::string& nickname, short port);
+
     Client();
     bool tryConnect();
     void sendMessage(const std::string& data);

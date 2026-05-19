@@ -1,8 +1,15 @@
+#define WIN32_LEAN_AND_MEAN
+#define _WIN32_WINNT 0x0A00
+
 #include <gtest/gtest.h>
+#include <thread>
+#include <chrono>
 
 // Подключаем файлы из других папок
 #include "../Client/Utils.h"
 #include "../Common/Packets.h"
+#include "../Server/Server.h"
+#include "../Client/Client.h"
 
 
 // ТЕСТЫ ДЛЯ УТИЛИТ (Client/Utils.cpp)
@@ -135,4 +142,80 @@ TEST(UtilsTests, TrimSpacesLogic) {
 int main(int argc, char** argv) {
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
+}
+
+// Тест 1: Проверка логики комнат на сервере (без сети)
+TEST(ServerLogicTests, JoinAndLeaveRoom) {
+    boost::asio::io_context io_context;
+    Server server(io_context, 0); // Порт 0 означает, что ОС сама выделит свободный порт
+
+    boost::asio::ip::tcp::socket socket(io_context);
+    auto session = std::make_shared<Session>(std::move(socket), server);
+
+    EXPECT_EQ(server.get_room_size("General"), 0);
+
+    server.join_room(session, "General");
+    EXPECT_EQ(server.get_room_size("General"), 1);
+
+    server.leave_room(session, "General");
+    EXPECT_EQ(server.get_room_size("General"), 0);
+}
+
+// Тест 2: Интеграционный тест общения двух клиентов через сервер
+TEST(IntegrationTests, MessageRoutingAndRooms) {
+    boost::asio::io_context io_context;
+    Server server(io_context, 8081); // Запускаем на тестовом порту 8081
+    
+    // Запускаем сервер в отдельном потоке
+    std::thread server_thread([&io_context]() {
+        io_context.run(); 
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Ждем запуска сервера
+
+    // Создаем клиентов
+    Client clientA("Yakov", 8081);
+    ASSERT_TRUE(clientA.tryConnect());
+
+    Client clientB("Katyenka", 8081);
+    ASSERT_TRUE(clientB.tryConnect());
+
+    // Перехватчик сообщений для Боба
+    std::string receivedByB = "";
+    clientB.onMessageReceived = [&receivedByB](const std::string& msg) {
+        receivedByB = msg;
+    };
+
+    // Слушаем сеть для каждого клиента в отдельных потоках
+    std::thread threadA([&clientA]() { clientA.getMessage(); });
+    std::thread threadB([&clientB]() { clientB.getMessage(); });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+   // Сценарий 1: Яков пишет Кате
+    clientA.sendMessage("Hello Katyenka!"); // Яков отправляет сообщение
+    std::this_thread::sleep_for(std::chrono::milliseconds(150)); // Ждем доставку
+
+    // Проверяем: Катя (receivedByB) должна получить сообщение от Якова
+    EXPECT_EQ(receivedByB, "Yakov: Hello Katyenka!");
+
+    // Сценарий 2: Изоляция комнат
+    receivedByB = ""; // Сбрасываем буфер Боба
+    clientA.sendMessage("/join Gaming"); // Катенька уходит
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    clientA.sendMessage("Secret Room Message"); // Катенька пишет в новой комнате
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+
+    // Боб остался в General, он не должен получить это сообщение
+    EXPECT_EQ(receivedByB, "");
+
+    // Чистим за собой потоки, чтобы тест успешно завершился
+    clientA.stop();
+    clientB.stop();
+    io_context.stop();
+    
+    if(threadA.joinable()) threadA.detach();
+    if(threadB.joinable()) threadB.detach();
+    if(server_thread.joinable()) server_thread.join();
 }

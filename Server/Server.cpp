@@ -133,3 +133,11 @@ void Session::do_read() {
             }
         });
 }
+
+size_t Server::get_room_size(const std::string& room_name) const {
+    auto it = rooms_.find(room_name);
+    if (it != rooms_.end()) {
+        return it->second.size();
+    }
+    return 0;
+}

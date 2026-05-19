@@ -18,6 +18,8 @@ public:
     void broadcast_to_room(const std::string& room_name, const std::string& msg,
         std::shared_ptr<Session> sender);
 
+    size_t get_room_size(const std::string& room_name) const;
+    
 private:
     void do_accept();
 

@@ -7,6 +7,18 @@ endif()
 
 project(StankinPractise LANGUAGES CXX)
 
+
+
+include(FetchContent)
+
+# Автоматическая загрузка Google Test
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG v1.14.0
+)
+FetchContent_MakeAvailable(googletest)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -55,22 +67,11 @@ else()
 endif()
 
 # ====================== ТЕСТЫ ======================
-find_package(GTest QUIET)
-if(GTest_FOUND)
-    add_executable(messenger_tests
-        Tests/test_main.cpp
-        Common/Packets.cpp
-        Client/Utils.cpp
-    )
+add_subdirectory(Tests)
+# ===================================================
+add_compile_definitions(_WIN32_WINNT=0x0A00)
+add_compile_definitions(WIN32_LEAN_AND_MEAN)
 
-    target_include_directories(messenger_tests PRIVATE ${CMAKE_SOURCE_DIR})
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-    if(WIN32)
-        target_link_libraries(messenger_tests GTest::gtest_main ws2_32)
-    else()
-        target_link_libraries(messenger_tests GTest::gtest_main pthread)
-    endif()
-
-    include(CTest)
-    add_test(NAME AllTests COMMAND messenger_tests)
-endif()
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL" CACHE STRING "" FORCE)

@@ -97,3 +97,17 @@ void Client::stop() {
 #endif
     }
 }
+
+Client::Client(const std::string& nickname, short port) {
+#ifdef _WIN32
+    WSADATA wsaData;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
+
+    Socket = socket(AF_INET, SOCK_STREAM, 0);
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
+    
+    name = nickname;
+}
