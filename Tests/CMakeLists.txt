@@ -40,8 +40,11 @@ target_link_libraries(messenger_tests
 )
 
 # Если сборка идет на Windows — добавляем библиотеки сокетов
+# Если сборка идет на Windows — добавляем библиотеки сокетов, иначе — pthread
 if(WIN32)
     target_link_libraries(messenger_tests ws2_32 wsock32)
+else()
+    target_link_libraries(messenger_tests pthread)
 endif()
 
 # Регистрируем тест в системе CTest

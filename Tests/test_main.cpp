@@ -215,7 +215,7 @@ TEST(IntegrationTests, MessageRoutingAndRooms) {
     clientB.stop();
     io_context.stop();
     
-    if(threadA.joinable()) threadA.detach();
-    if(threadB.joinable()) threadB.detach();
+    if(threadA.joinable()) threadA.join();
+    if(threadB.joinable()) threadB.join();
     if(server_thread.joinable()) server_thread.join();
 }
