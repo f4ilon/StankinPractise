@@ -91,6 +91,10 @@ void Client::getMessage() {
 
 void Client::stop() {
     if (Socket != INVALID_SOCKET) {
+#ifndef _WIN32
+        shutdown(Socket, SHUT_RDWR);
+#endif
+
         CLOSE_SOCKET(Socket);
 #ifdef _WIN32
         WSACleanup();
